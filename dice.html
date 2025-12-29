@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Naughty Dice</title>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cormorant+Garamond:wght@400;600&display=swap');
+
+  body {
+    margin: 0;
+    font-family: 'Cormorant Garamond', serif;
+    background: linear-gradient(135deg, #2c003e, #6a1b9a, #ab47bc);
+    color: #f5e6ff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .container {
+    max-width: 420px;
+    width: 100%;
+    margin: auto;
+  }
+
+  h2 {
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    color: #ffd1dc;
+    margin-bottom: 50px;
+    text-shadow: 0 2px 10px rgba(255, 105, 180, 0.4);
+    letter-spacing: 1px;
+  }
+
+  h3 {
+    text-align: center;
+    font-size: 1.6rem;
+    margin: 30px 0 20px;
+    color: #ff8fb3;
+  }
+
+  .card {
+    background: rgba(27, 27, 40, 0.85);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 105, 180, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Mood Selection - Beautiful Visible Cards */
+  .mood-card {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .mood-options {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .mood-option {
+    padding: 22px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-align: center;
+  }
+
+  .mood-option:hover {
+    background: rgba(255, 105, 180, 0.2);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(255, 20, 147, 0.4);
+  }
+
+  .mood-option.selected {
+    background: linear-gradient(135deg, #ff69b4, #c71585);
+    box-shadow: 0 14px 40px rgba(255, 20, 147, 0.6);
+    transform: scale(1.03);
+  }
+
+  input, select {
+    width: 100%;
+    padding: 14px;
+    border-radius: 14px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #f5e6ff;
+    font-size: 1.1rem;
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  input::placeholder {
+    color: rgba(245, 230, 255, 0.6);
+  }
+
+  button {
+    width: 100%;
+    padding: 18px;
+    margin-top: 16px;
+    border-radius: 18px;
+    border: none;
+    font-size: 1.3rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #ff69b4, #c71585);
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(255, 20, 147, 0.4);
+    transition: all 0.3s ease;
+  }
+
+  button:hover {
+    transform: scale(1.03);
+    box-shadow: 0 10px 30px rgba(255, 20, 147, 0.6);
+  }
+
+  .secondary, .home-btn {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .home-btn {
+    margin-top: 30px;
+    font-size: 1.1rem;
+  }
+
+  .hidden { display: none; }
+
+  .fade {
+    animation: fadeIn 0.6s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  #diceResult {
+    font-size: 1.6rem;
+    line-height: 1.7;
+    text-align: center;
+    min-height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  /* Sparkles background */
+  body::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle at 20% 80%, rgba(255, 105, 180, 0.15) 0%, transparent 30%),
+                radial-gradient(circle at 80% 20%, rgba(186, 85, 211, 0.15) 0%, transparent 30%);
+    pointer-events: none;
+    z-index: -1;
+  }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+  <!-- SETUP -->
+  <div id="setup" class="fade">
+    <h2>🎲 Naughty Dice</h2>
+
+    <!-- Mood Selection -->
+    <div class="card mood-card">
+      <h3 style="margin:0 0 20px 0; padding-top:20px;">Choose Mood</h3>
+      <div class="mood-options">
+        <div class="mood-option selected" data-mood="casual">🟢 Casual</div>
+        <div class="mood-option" data-mood="hot">🔥 Hot & Spicy</div>
+        <div class="mood-option" data-mood="wild">😈 Wild & Extreme</div>
+      </div>
+    </div>
+
+    <div id="players"></div>
+
+    <button onclick="addPlayer()">Add Participant</button>
+    <button onclick="startGame()">Start Game</button>
+
+    <button class="home-btn secondary" onclick="goHome()">← Back to Game Selection</button>
+  </div>
+
+  <!-- GAME -->
+  <div id="game" class="hidden fade">
+    <h3 id="currentPlayer"></h3>
+
+    <button onclick="rollDice()">🎲 Roll Dice</button>
+
+    <div class="card hidden" id="resultCard">
+      <h2 id="diceResult"></h2>
+    </div>
+
+    <button class="secondary" onclick="nextTurn()">Next Turn</button>
+
+    <button class="home-btn secondary" onclick="goHome()">← Back to Game Selection</button>
+  </div>
+
+</div>
+
+<script>
+let players = [];
+let currentIndex = -1;
+let lastIndex = -1;
+let mood = "casual";
+
+const dicePrompts = {
+  casual: {
+    male: {
+      action: [
+        "Hold",
+        "Hug",
+        "Gentle kiss",
+        "Let your fingers play on",
+        "Massage lightly",
+        "Rest your hand against"
+      ],
+      place: [
+        "her hands",
+        "her shoulders",
+        "her cheek",
+        "her forehead",
+        "her outer thigh",
+        "her neck"
+      ]
+    },
+    female: {
+      action: [
+        "Hold",
+        "Hug",
+        "Gentle kiss",
+        "Let Your hands plan on ",
+        "massage lightly",
+        "Lean into"
+      ],
+      place: [
+        "his hands",
+        "his shoulders",
+        "his cheek",
+        "his forehead",
+        "his outer thigh",
+        "his neck"
+      ]
+    }
+  },
+
+  hot: {
+    male: {
+      action: [
+        "Lick slowly",
+        "Suck softly",
+        "Trace slowly with",
+        "Gentle bite",
+        "Press lightly on ",
+        "Hover close without touching"
+      ],
+      place: [
+        "her lips",
+        "her neck",
+        "her ears",
+        "her waist",
+        "her chest ",
+        "her feet",
+        "her inner thighs"
+      ]
+    },
+    female: {
+      action: [
+        "Lick slowly",
+        "Suck softly",
+        "Trace slowly with",
+        "Gentle bite",
+        "Press lightly on ",
+        "Hover close without touching"
+      ],
+      place: [
+        "his lips",
+        "his neck",
+        "his jawline",
+        "his chest ",
+        "his waist",
+        "his feet",
+        "his inner thighs"
+      ]
+    }
+  },
+
+  wild: {
+    male: {
+      action: [
+        "Lick",
+        "Suck",
+        "Squeeze",
+        "Spank",
+        "Rub",
+        "Bite",
+        "Do whatever feels  with"
+      ],
+      place: [
+        "her neck",
+        "her Boobies",
+        "her nipples",
+        "her Pussy",
+        "her buttocks",
+        "Where she wants"
+      ]
+    },
+    female: {
+      action: [
+        "Lick",
+        "Suck",
+        "Squeeze",
+        "Spank",
+        "Rub",
+        "Bite",
+        "Do whatever feels  with"
+      ],
+      place: [
+        "his neck",
+        "his cock",
+        "his nipples",
+        "his inner thighs",
+        "his buttocks",
+        "Where he wants"
+      ]
+    }
+  }
+};
+
+/* Mood selection click handling */
+document.querySelectorAll('.mood-option').forEach(option => {
+  option.addEventListener('click', function() {
+    document.querySelectorAll('.mood-option').forEach(opt => opt.classList.remove('selected'));
+    this.classList.add('selected');
+    mood = this.getAttribute('data-mood');
+  });
+});
+
+/* Initial players */
+addPlayer();
+addPlayer();
+
+function addPlayer() {
+  players.push({ name: "", gender: "male" });
+  renderPlayers();
+}
+
+function renderPlayers() {
+  const container = document.getElementById("players");
+  container.innerHTML = "";
+
+  players.forEach((p, i) => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <input placeholder="Participant name"
+        onchange="players[${i}].name=this.value">
+      <select onchange="players[${i}].gender=this.value">
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function startGame() {
+  players = players.filter(p => p.name.trim());
+  if (players.length < 2) {
+    alert("Add at least 2 participants");
+    return;
+  }
+  mood = document.querySelector('.mood-option.selected').getAttribute('data-mood');
+  document.getElementById("setup").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+  nextTurn();
+}
+
+function nextTurn() {
+  document.getElementById("resultCard").classList.add("hidden");
+
+  let i;
+  do {
+    i = Math.floor(Math.random() * players.length);
+  } while (i === lastIndex && players.length > 1);
+
+  lastIndex = i;
+  currentIndex = i;
+
+  document.getElementById("currentPlayer").innerText =
+    players[i].name + ", roll the dice";
+}
+
+function rollDice() {
+  const actionRoll = Math.floor(Math.random() * 6);
+  const placeRoll = Math.floor(Math.random() * 6);
+
+  const player = players[currentIndex];
+  const data = dicePrompts[mood][player.gender];
+
+  const result =
+    data.action[actionRoll] + " " + data.place[placeRoll];
+
+  document.getElementById("diceResult").innerText = result;
+  document.getElementById("resultCard").classList.remove("hidden");
+}
+
+function goHome() {
+  window.location.href = "index.html";
+}
+</script>
+</body>
+</html>
