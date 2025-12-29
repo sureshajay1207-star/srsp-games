@@ -1,4 +1,4 @@
-# srsp-games
+# SRSP-games
 # 🎮 Private Game Night
 
 A collection of **consent-first, same-room, same-partner party games** designed to break awkwardness, build connection, and gradually increase playful tension.
